@@ -25,13 +25,13 @@ define('WP_CONTENT_URL', 'http://' . $_SERVER['SERVER_NAME'] . '/wp-content');
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', $_ENV['DB_NAME']);
+define('DB_NAME', $_ENV['TF_VAR_db_name']);
 
 /** MySQL database username */
-define('DB_USER', $_ENV['DB_USER']);
+define('DB_USER', $_ENV['TF_VAR_db_username']);
 
 /** MySQL database password */
-define('DB_PASSWORD', $_ENV['DB_PASSWORD']);
+define('DB_PASSWORD', $_ENV['TF_VAR_db_password']);
 
 /** MySQL hostname */
 define('DB_HOST', $_ENV['DB_HOST']);
