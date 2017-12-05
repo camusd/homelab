@@ -1,3 +1,4 @@
+# TODO: configure backups
 resource "aws_db_instance" "db" {
     depends_on             = ["aws_security_group.db_sg"]
     identifier             = "${var.db_identifier}"
