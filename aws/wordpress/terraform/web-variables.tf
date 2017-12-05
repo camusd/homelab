@@ -10,3 +10,7 @@ DESCRIPTION
 variable "key_name" {
   description = "Desired name of AWS key pair"
 }
+
+variable "git_repo" {
+  description = "The repo that contains the wordpress app"
+}
