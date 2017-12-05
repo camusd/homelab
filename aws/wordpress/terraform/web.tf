@@ -19,7 +19,7 @@ resource "aws_elb" "web_elb" {
 # Create a launch configuration for web app
 resource "aws_launch_configuration" "web_launch_conf" {
   name_prefix                 = "web_config-"
-  image_id                    = "ami-bf4193c7"
+  image_id                    = "${var.web_ami_id}"
   instance_type               = "t2.micro"
   security_groups             = ["${aws_security_group.web_sg.id}"]
   key_name                    = "${var.aws_key_name}"

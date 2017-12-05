@@ -12,6 +12,7 @@ resource "aws_db_instance" "db" {
     vpc_security_group_ids = ["${aws_security_group.db_sg.id}"]
     db_subnet_group_name   = "${aws_db_subnet_group.private_subnets.id}"
     skip_final_snapshot    = true
+    multi_az               = true
 
     lifecycle {
         create_before_destroy = true
