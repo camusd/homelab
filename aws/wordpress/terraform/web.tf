@@ -14,12 +14,6 @@ resource "aws_elb" "web_elb" {
   lifecycle {
     create_before_destroy = true
   }
-
-  tag {
-    key                 = "Name"
-    value               = "web"
-    propagate_at_launch = true
-  }
 }
 
 # Create a launch configuration for web app
