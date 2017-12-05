@@ -17,6 +17,10 @@ resource "aws_security_group" "web_elb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags {
+    Name = "web_elb_asg"
+  }
 }
 
 # Private HTTP access and SSH from anywhere for web instances
