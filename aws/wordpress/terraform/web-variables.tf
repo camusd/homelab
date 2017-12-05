@@ -1,3 +1,8 @@
+variable "web_ami_id" {
+  default = "ami-15e73d6d"
+  description = "Web ami"
+}
+
 variable "aws_public_key_path" {
   description = <<DESCRIPTION
 Path to the SSH public key to be used for authentication.
