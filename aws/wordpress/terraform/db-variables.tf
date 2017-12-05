@@ -4,7 +4,7 @@ variable "db_identifier" {
 }
 
 variable "db_storage" {
-    default     = "10"
+    default     = "20"
     description = "Storage size in GB"
 }
 
