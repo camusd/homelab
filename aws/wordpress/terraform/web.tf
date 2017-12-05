@@ -1,6 +1,6 @@
 # Create an ELB to serve traffic to web ASG
 resource "aws_elb" "web_elb" {
-  name_prefix     = "web"
+  name_prefix     = "web-"
   subnets         = ["${aws_subnet.subnet_1.id}", "${aws_subnet.subnet_2.id}"]
   security_groups = ["${aws_security_group.web_elb_sg.id}"]
 
@@ -18,12 +18,13 @@ resource "aws_elb" "web_elb" {
 
 # Create a launch configuration for web app
 resource "aws_launch_configuration" "web_launch_conf" {
-  name_prefix     = "web_config"
-  image_id        = "ami-bf4193c7"
-  instance_type   = "t2.micro"
-  security_groups = ["${aws_security_group.web_sg.id}"]
-  key_name        = "${var.key_name}"
-  user_data       = "${data.template_file.web_user_data.rendered}"
+  name_prefix                 = "web_config-"
+  image_id                    = "ami-bf4193c7"
+  instance_type               = "t2.micro"
+  security_groups             = ["${aws_security_group.web_sg.id}"]
+  key_name                    = "${var.key_name}"
+  user_data                   = "${data.template_file.web_user_data.rendered}"
+  associate_public_ip_address = true
   
   lifecycle {
     create_before_destroy = true
@@ -44,7 +45,7 @@ data "template_file" "web_user_data" {
 # Create an autoscaling group in 2 difference AZs for high availability
 resource "aws_autoscaling_group" "web_asg" {
   depends_on                 = ["aws_db_instance.db"]
-  name_prefix                = "web_asg"
+  name_prefix                = "web_asg-"
   launch_configuration       = "${aws_launch_configuration.web_launch_conf.name}"
   min_size                   = 2
   max_size                   = 4
