@@ -1,5 +1,5 @@
 variable "db_identifier" {
-    default     = "mydb-rds"
+    default     = "wordpress-db"
     description = "Identifier for DB"
 }
 
