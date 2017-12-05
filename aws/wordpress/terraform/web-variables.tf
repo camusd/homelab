@@ -1,5 +1,5 @@
 variable "web_ami_id" {
-  default = "ami-15e73d6d"
+  default = "ami-4e18c236"
   description = "Web ami"
 }
 
