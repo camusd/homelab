@@ -47,19 +47,6 @@ data "template_file" "web_user_data" {
   template = "${file("./web-user-data.tpl")}"
 
   vars {
-    # db_name             = "${var.db_name}"
-    # db_username         = "${var.db_username}"
-    # db_password         = "${var.db_password}"
-    # db_host             = "${aws_db_instance.db.endpoint}"
-    # git_repo            = "${var.git_repo}"
-    # wp_auth_key         = "${var.wp_auth_key}"
-    # wp_secure_auth_key  = "${var.wp_secure_auth_key}"
-    # wp_logged_in_key    = "${var.wp_logged_in_key}"
-    # wp_nonce_key        = "${var.wp_nonce_key}"
-    # wp_auth_salt        = "${var.wp_auth_salt}"
-    # wp_secure_auth_salt = "${var.wp_secure_auth_salt}"
-    # wp_logged_in_salt   = "${var.wp_logged_in_salt}"
-    # wp_nonce_salt       = "${var.wp_nonce_salt}"
     efs_dns_name         = "${aws_efs_file_system.web_efs.dns_name}"
   }
 }
@@ -87,6 +74,17 @@ resource "aws_autoscaling_group" "web_asg" {
       value               = "web"
       propagate_at_launch = true
   }
+}
+
+resource "aws_elasticache_cluster" "web" {
+  cluster_id           = "web-elasticache"
+  engine               = "redis"
+  node_type            = "cache.t2.micro"
+  port                 = 6379
+  num_cache_nodes      = 1
+  parameter_group_name = "default.redis3.2"
+  subnet_group_name    = "${aws_elasticache_subnet_group.private_subnets.id}"
+  security_group_ids   = ["${aws_security_group.redis_sg.id}"]
 }
 
 resource "aws_efs_file_system" "web_efs" {
