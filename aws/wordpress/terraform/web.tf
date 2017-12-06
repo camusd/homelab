@@ -1,3 +1,15 @@
+# Get the most recent golden web ami
+data "aws_ami" "web_ami" {
+    most_recent = true
+    owners      = ["self"]
+    name_regex  = "web-golden"
+
+    filter {
+        name = "tag:Name"
+        values = ["web"]
+    }
+}
+
 # Create an ELB to serve traffic to web ASG
 resource "aws_elb" "web_elb" {
   name_prefix     = "web-"
@@ -19,7 +31,7 @@ resource "aws_elb" "web_elb" {
 # Create a launch configuration for web app
 resource "aws_launch_configuration" "web_launch_conf" {
   name_prefix                 = "web_config-"
-  image_id                    = "${var.web_ami_id}"
+  image_id                    = "${data.aws_ami.web_ami.id}"
   instance_type               = "t2.micro"
   security_groups             = ["${aws_security_group.web_sg.id}"]
   key_name                    = "${var.aws_key_name}"
@@ -35,19 +47,20 @@ data "template_file" "web_user_data" {
   template = "${file("./web-user-data.tpl")}"
 
   vars {
-    db_name             = "${var.db_name}"
-    db_username         = "${var.db_username}"
-    db_password         = "${var.db_password}"
-    db_host             = "${aws_db_instance.db.endpoint}"
-    git_repo            = "${var.git_repo}"
-    wp_auth_key         = "${var.wp_auth_key}"
-    wp_secure_auth_key  = "${var.wp_secure_auth_key}"
-    wp_logged_in_key    = "${var.wp_logged_in_key}"
-    wp_nonce_key        = "${var.wp_nonce_key}"
-    wp_auth_salt        = "${var.wp_auth_salt}"
-    wp_secure_auth_salt = "${var.wp_secure_auth_salt}"
-    wp_logged_in_salt   = "${var.wp_logged_in_salt}"
-    wp_nonce_salt       = "${var.wp_nonce_salt}"
+    # db_name             = "${var.db_name}"
+    # db_username         = "${var.db_username}"
+    # db_password         = "${var.db_password}"
+    # db_host             = "${aws_db_instance.db.endpoint}"
+    # git_repo            = "${var.git_repo}"
+    # wp_auth_key         = "${var.wp_auth_key}"
+    # wp_secure_auth_key  = "${var.wp_secure_auth_key}"
+    # wp_logged_in_key    = "${var.wp_logged_in_key}"
+    # wp_nonce_key        = "${var.wp_nonce_key}"
+    # wp_auth_salt        = "${var.wp_auth_salt}"
+    # wp_secure_auth_salt = "${var.wp_secure_auth_salt}"
+    # wp_logged_in_salt   = "${var.wp_logged_in_salt}"
+    # wp_nonce_salt       = "${var.wp_nonce_salt}"
+    efs_dns_name         = "${aws_efs_file_system.web_efs.dns_name}"
   }
 }
 
@@ -74,6 +87,26 @@ resource "aws_autoscaling_group" "web_asg" {
       value               = "web"
       propagate_at_launch = true
   }
+}
+
+resource "aws_efs_file_system" "web_efs" {
+  creation_token = "wordpress"
+
+  tags {
+      Name = "web"
+  }
+}
+
+resource "aws_efs_mount_target" "subnet_1" {
+  file_system_id  = "${aws_efs_file_system.web_efs.id}"
+  subnet_id       = "${aws_subnet.subnet_1.id}"
+  security_groups = ["${aws_security_group.efs_sg.id}"]
+}
+
+resource "aws_efs_mount_target" "subnet_2" {
+  file_system_id  = "${aws_efs_file_system.web_efs.id}"
+  subnet_id       = "${aws_subnet.subnet_2.id}"
+  security_groups = ["${aws_security_group.efs_sg.id}"]
 }
 
 resource "aws_autoscaling_policy" "web_asg_policy" {
