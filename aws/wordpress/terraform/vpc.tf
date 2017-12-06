@@ -117,3 +117,9 @@ resource "aws_db_subnet_group" "private_subnets" {
     description = "Our private group of subnets"
     subnet_ids  = ["${aws_subnet.subnet_3.id}", "${aws_subnet.subnet_4.id}"]
 }
+
+resource "aws_elasticache_subnet_group" "private_subnets" {
+    name        = "private-subnet-group"
+    description = "Our private group of subnets"
+    subnet_ids  = ["${aws_subnet.subnet_3.id}", "${aws_subnet.subnet_4.id}"]
+}
