@@ -25,16 +25,16 @@ define('WP_CONTENT_URL', 'http://' . $_SERVER['SERVER_NAME'] . '/wp-content');
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', $_ENV['TF_VAR_db_name']);
+define('DB_NAME', 'wordpress');
 
 /** MySQL database username */
-define('DB_USER', $_ENV['TF_VAR_db_username']);
+define('DB_USER', 'admin');
 
 /** MySQL database password */
-define('DB_PASSWORD', $_ENV['TF_VAR_db_password']);
+define('DB_PASSWORD', 'takeTheDreadfort');
 
 /** MySQL hostname */
-define('DB_HOST', $_ENV['DB_HOST']);
+define('DB_HOST', 'wordpress-db.cfiwx4n8dww1.us-west-2.rds.amazonaws.com:3306');
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
@@ -51,16 +51,19 @@ define('DB_COLLATE', '');
  *
  * @since 2.6.0
  */
-define('AUTH_KEY',          $_ENV['AUTH_KEY']);
-define('SECURE_AUTH_KEY',   $_ENV['SECURE_AUTH_KEY']);
-define('LOGGED_IN_KEY',     $_ENV['LOGGED_IN_KEY']);
-define('NONCE_KEY',         $_ENV['NONCE_KEY']);
-define('AUTH_SALT',         $_ENV['AUTH_SALT']);
-define('SECURE_AUTH_SALT',  $_ENV['SECURE_AUTH_SALT']);
-define('LOGGED_IN_SALT',    $_ENV['LOGGED_IN_SALT']);
-define('NONCE_SALT',        $_ENV['NONCE_SALT']);
-define('WP_CACHE_KEY_SALT', $_ENV['WP_CACHE_KEY_SALT']);
+define('AUTH_KEY', 'G||Ehc4g |+]Mq|UoJ4m$`}A%NWmI0~M~#.AZu^aW9!|<yLZK73*s:4Q!7 wQa!C');
+define('SECURE_AUTH_KEY', 'B|I(+rnb9-}gIXg:%TtD|{^w2]8Df@s@+3 ?HEwZP3*I?1N`+PY_cGuLl_2-2cX2');
+define('LOGGED_IN_KEY', 's]=GY3Brapkf4zhKqwy~V.PWgH~+<kLtj@|}vOJfLpX7<SrC +P.++M{l+N{#l?#');
+define('NONCE_KEY', '*e6bHKT&Eh;&+#LVS-;SUMgLm5.?nB@{i9a)KS1Jf){(}hD,25ot|U$N`{-}FE|Q');
+define('AUTH_SALT', 'Uw#yt$($?C~[^}-HJh=+NXv]#yaFGb7lziZRGz&Mx52;NoU`hUMb13M&tM <omk]');
+define('SECURE_AUTH_SALT', 'D|;k_])FKlmaxpvvpTtSdv+pG@F8k(+j-B$P,Zg$dR-1i_o.cjx5iLs&FyQ>9C7*');
+define('LOGGED_IN_SALT', 'KBW%78(>VBG!4%.zNBa+EiwP~T-s2Ejnbu28Ix6TarGs]X|d+-Vi8|Y|6.N0.rd5');
+define('NONCE_SALT', '7+)__d^GdS+A{sr 5zd5-$O>T8;O (SI{h?0/gC/dc|%-`%8Km{u>-F[&tW+-Z+b');
+
+define('WP_CACHE_KEY_SALT', 'n/sI &AKkK7sUhoiZ+cz@/--*bLmqV65Pq^VN`1rgFeC:5<T}7y)#3:|F+Yv *m.');
 define('WP_CACHE', true);
+define('WP_REDIS_HOST', 'web-elasticache.xxg6ca.0001.usw2.cache.amazonaws.com');
+define('WP_REDIS_CLIENT', 'pecl');
 
 /**#@-*/
 
