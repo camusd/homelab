@@ -2,7 +2,7 @@
 data "aws_ami" "web_ami" {
     most_recent = true
     owners      = ["self"]
-    name_regex  = "web-golden"
+    name_regex  = "web-base"
 
     filter {
         name = "tag:Name"
@@ -47,7 +47,7 @@ data "template_file" "web_user_data" {
   template = "${file("./web-user-data.tpl")}"
 
   vars {
-    efs_dns_name         = "${aws_efs_file_system.web_efs.dns_name}"
+    efs_dns_name = "${aws_efs_file_system.web_efs.dns_name}"
   }
 }
 

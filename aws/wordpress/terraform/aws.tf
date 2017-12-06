@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     bucket  = "wordpress-terraform-state-dev"
     key     = "state/wordpress.tfstate"
-    region  = "${vars.region}"
+    region  = "us-west-2"
   }
 }
 
@@ -18,6 +18,6 @@ data "terraform_remote_state" "state" {
   config {
     bucket = "wordpress-terraform-state-dev"
     key    = "state/wordpress.tfstate"
-    region = "${vars.region}"
+    region = "us-west-2"
   }
 }
