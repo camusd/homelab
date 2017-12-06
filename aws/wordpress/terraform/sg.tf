@@ -25,7 +25,7 @@ resource "aws_security_group" "web_elb_sg" {
 
 # Private HTTP access and SSH from anywhere for web instances
 resource "aws_security_group" "web_sg" {
-    name        = "main_web_sg"
+    name        = "web_sg"
     description = "Allow public SSH and private HTTP inbound traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
@@ -57,7 +57,7 @@ resource "aws_security_group" "web_sg" {
 
 # SSH and RDS access for db instances
 resource "aws_security_group" "db_sg" {
-    name        = "main_db_sg"
+    name        = "db_sg"
     description = "Allow private RDS and public SSH inbound traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
@@ -84,5 +84,30 @@ resource "aws_security_group" "db_sg" {
 
     tags {
         Name = "db_sg"
+    }
+}
+
+# NFS access for efs instances
+resource "aws_security_group" "efs_sg" {
+    name        = "efs_sg"
+    description = "Allow private NFS traffic"
+    vpc_id      = "${aws_vpc.main.id}"
+
+    ingress {
+        from_port   = 2049
+        to_port     = 2049
+        protocol    = "tcp"
+        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
+    }
+
+    egress {
+      from_port = 0
+      to_port = 0
+      protocol = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags {
+        Name = "efs_sg"
     }
 }

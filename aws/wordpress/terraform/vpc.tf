@@ -1,11 +1,22 @@
 # Create a VPC to launch our instances into
 resource "aws_vpc" "main" {
-    cidr_block       = "10.0.0.0/16"
-    instance_tenancy = "default"
-
+    cidr_block           = "10.0.0.0/16"
+    enable_dns_hostnames = true
     tags {
         Name = "main"
     }
+}
+
+# Create a DHCP Options Set to allow EC2 to resolve AWS DNS
+resource "aws_vpc_dhcp_options" "dns_resolver" {
+  domain_name         = "us-west-2.compute.internal"
+  domain_name_servers = ["AmazonProvidedDNS"]
+}
+
+# Associate DHCP Options Set to main VPC
+resource "aws_vpc_dhcp_options_association" "dns_resolver" {
+  vpc_id          = "${aws_vpc.main.id}"
+  dhcp_options_id = "${aws_vpc_dhcp_options.dns_resolver.id}"
 }
 
 # Create an internet gateway to give our subnet access to the outside world
