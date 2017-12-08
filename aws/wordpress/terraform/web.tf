@@ -81,7 +81,7 @@ resource "aws_launch_configuration" "web_launch_conf" {
   security_groups             = ["${aws_security_group.web.id}"]
   key_name                    = "${var.aws_key_name}"
   user_data                   = "${data.template_file.web_user_data.rendered}"
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   
   lifecycle {
     create_before_destroy = true
@@ -119,17 +119,6 @@ resource "aws_autoscaling_group" "web_asg" {
       value               = "web"
       propagate_at_launch = true
   }
-}
-
-resource "aws_elasticache_cluster" "web" {
-  cluster_id           = "web-elasticache"
-  engine               = "redis"
-  node_type            = "cache.t2.micro"
-  port                 = 6379
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis3.2"
-  subnet_group_name    = "${aws_elasticache_subnet_group.private_subnets.id}"
-  security_group_ids   = ["${aws_security_group.redis.id}"]
 }
 
 resource "aws_efs_file_system" "web_efs" {
