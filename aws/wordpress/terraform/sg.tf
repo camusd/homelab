@@ -1,10 +1,16 @@
-# Public HTTP access for ELB
-resource "aws_security_group" "web_elb_sg" {
-  name        = "web_elb_sg"
+resource "aws_security_group" "web_elb" {
+  name        = "web_elb"
   description = "Allows public HTTP inbound traffic"
   vpc_id      = "${aws_vpc.main.id}"
 
   ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+    ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -19,28 +25,51 @@ resource "aws_security_group" "web_elb_sg" {
   }
 
   tags {
-    Name = "web_elb_asg"
+    Name = "web_elb"
   }
 }
 
-# Private HTTP access and SSH from anywhere for web instances
-resource "aws_security_group" "web_sg" {
-    name        = "web_sg"
-    description = "Allow public SSH and private HTTP inbound traffic"
+resource "aws_security_group" "bastion" {
+  name        = "bastion"
+  description = "Allows public SSH inbound traffic"
+  vpc_id      = "${aws_vpc.main.id}"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${var.home_ip}", "${var.work_ip}"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "bastion"
+  }
+}
+
+resource "aws_security_group" "web" {
+    name        = "web"
+    description = "Allow private HTTP and bastion host SSH inbound traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port   = 22
-        to_port     = 22
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        from_port       = 22
+        to_port         = 22
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.bastion.id}"]
     }
 
     ingress {
-        from_port   = 80
-        to_port     = 80
-        protocol    = "tcp"
-        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
+        from_port       = 80
+        to_port         = 80
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.web_elb.id}"]
     }
 
     egress {
@@ -51,28 +80,27 @@ resource "aws_security_group" "web_sg" {
     }
 
     tags {
-        Name = "web_sg"
+        Name = "web"
     }
 }
 
-# SSH and RDS access for db instances
-resource "aws_security_group" "db_sg" {
-    name        = "db_sg"
-    description = "Allow private RDS and public SSH inbound traffic"
+resource "aws_security_group" "db" {
+    name        = "db"
+    description = "Allow private MySQL and bastion host SSH inbound traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port   = 22
-        to_port     = 22
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        from_port       = 22
+        to_port         = 22
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.bastion.id}"]
     }
 
     ingress {
-        from_port   = 3306
-        to_port     = 3306
-        protocol    = "tcp"
-        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
+        from_port       = 3306
+        to_port         = 3306
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.web.id}"]
     }
 
     egress {
@@ -83,21 +111,20 @@ resource "aws_security_group" "db_sg" {
     }
 
     tags {
-        Name = "db_sg"
+        Name = "db"
     }
 }
 
-# NFS access for efs instances
-resource "aws_security_group" "efs_sg" {
-    name        = "efs_sg"
+resource "aws_security_group" "efs" {
+    name        = "efs"
     description = "Allow private NFS traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port   = 2049
-        to_port     = 2049
-        protocol    = "tcp"
-        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
+        from_port       = 2049
+        to_port         = 2049
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.web.id}"]
     }
 
     egress {
@@ -108,21 +135,20 @@ resource "aws_security_group" "efs_sg" {
     }
 
     tags {
-        Name = "efs_sg"
+        Name = "efs"
     }
 }
 
-# Access for Redis instances
-resource "aws_security_group" "redis_sg" {
-    name        = "redis_sg"
+resource "aws_security_group" "redis" {
+    name        = "redis"
     description = "Allow private Redis traffic"
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port   = 6379
-        to_port     = 6379
-        protocol    = "tcp"
-        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
+        from_port       = 6379
+        to_port         = 6379
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.web.id}"]
     }
 
     egress {
@@ -133,6 +159,6 @@ resource "aws_security_group" "redis_sg" {
     }
 
     tags {
-        Name = "redis_sg"
+        Name = "redis"
     }
 }

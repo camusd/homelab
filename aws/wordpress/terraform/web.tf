@@ -1,20 +1,53 @@
-# Get the most recent golden web ami
+# Get the most recent base web ami
 data "aws_ami" "web_ami" {
-    most_recent = true
-    owners      = ["self"]
-    name_regex  = "web-base"
+  most_recent = true
+  owners      = ["self"]
+  name_regex  = "web-base"
 
-    filter {
-        name = "tag:Name"
-        values = ["web"]
-    }
+  filter {
+    name = "tag:Name"
+    values = ["web"]
+  }
+}
+
+# Get the most recent bastion ami
+data "aws_ami" "bastion" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "name"
+    values = ["amzn-ami-hvm-*"]
+  }
 }
 
 # Create an ELB to serve traffic to web ASG
 resource "aws_elb" "web_elb" {
   name_prefix     = "web-"
-  subnets         = ["${aws_subnet.subnet_1.id}", "${aws_subnet.subnet_2.id}"]
-  security_groups = ["${aws_security_group.web_elb_sg.id}"]
+  subnets         = ["${aws_subnet.public_1.id}", "${aws_subnet.public_2.id}"]
+  security_groups = ["${aws_security_group.web_elb.id}"]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 443
+    lb_protocol       = "https"
+    ssl_certificate_id = "${data.aws_acm_certificate.cert.arn}"
+  }
 
   listener {
     instance_port     = 80
@@ -23,9 +56,21 @@ resource "aws_elb" "web_elb" {
     lb_protocol       = "http"
   }
 
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "tcp:80"
+    interval            = 30
+  }
+
   lifecycle {
     create_before_destroy = true
   }
+}
+
+data "aws_acm_certificate" "cert" {
+  domain   = "*.dylancamus.com"
 }
 
 # Create a launch configuration for web app
@@ -33,7 +78,7 @@ resource "aws_launch_configuration" "web_launch_conf" {
   name_prefix                 = "web_config-"
   image_id                    = "${data.aws_ami.web_ami.id}"
   instance_type               = "t2.micro"
-  security_groups             = ["${aws_security_group.web_sg.id}"]
+  security_groups             = ["${aws_security_group.web.id}"]
   key_name                    = "${var.aws_key_name}"
   user_data                   = "${data.template_file.web_user_data.rendered}"
   associate_public_ip_address = true
@@ -59,7 +104,7 @@ resource "aws_autoscaling_group" "web_asg" {
   min_size                   = 2
   max_size                   = 4
   desired_capacity           = 2
-  vpc_zone_identifier        = ["${aws_subnet.subnet_1.id}", "${aws_subnet.subnet_2.id}"]
+  vpc_zone_identifier        = ["${aws_subnet.web_1.id}", "${aws_subnet.web_2.id}"]
   health_check_grace_period  = 300
   health_check_type          = "ELB"
   load_balancers             = ["${aws_elb.web_elb.id}"]
@@ -84,7 +129,7 @@ resource "aws_elasticache_cluster" "web" {
   num_cache_nodes      = 1
   parameter_group_name = "default.redis3.2"
   subnet_group_name    = "${aws_elasticache_subnet_group.private_subnets.id}"
-  security_group_ids   = ["${aws_security_group.redis_sg.id}"]
+  security_group_ids   = ["${aws_security_group.redis.id}"]
 }
 
 resource "aws_efs_file_system" "web_efs" {
@@ -95,16 +140,16 @@ resource "aws_efs_file_system" "web_efs" {
   }
 }
 
-resource "aws_efs_mount_target" "subnet_1" {
+resource "aws_efs_mount_target" "web_1" {
   file_system_id  = "${aws_efs_file_system.web_efs.id}"
-  subnet_id       = "${aws_subnet.subnet_1.id}"
-  security_groups = ["${aws_security_group.efs_sg.id}"]
+  subnet_id       = "${aws_subnet.web_1.id}"
+  security_groups = ["${aws_security_group.efs.id}"]
 }
 
-resource "aws_efs_mount_target" "subnet_2" {
+resource "aws_efs_mount_target" "web_2" {
   file_system_id  = "${aws_efs_file_system.web_efs.id}"
-  subnet_id       = "${aws_subnet.subnet_2.id}"
-  security_groups = ["${aws_security_group.efs_sg.id}"]
+  subnet_id       = "${aws_subnet.web_2.id}"
+  security_groups = ["${aws_security_group.efs.id}"]
 }
 
 resource "aws_autoscaling_policy" "web_asg_policy" {
@@ -118,4 +163,17 @@ resource "aws_autoscaling_policy" "web_asg_policy" {
 resource "aws_key_pair" "auth" {
   key_name   = "${var.aws_key_name}"
   public_key = "${file(var.aws_public_key_path)}"
+}
+
+resource "aws_instance" "bastion" {
+  ami                         = "${data.aws_ami.bastion.id}"
+  instance_type               = "t2.micro"
+  subnet_id                   = "${aws_subnet.bastion.id}"
+  vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
+  key_name                    = "${var.aws_key_name}"
+  associate_public_ip_address = true
+
+  tags {
+    Name = "bastion"
+  }
 }

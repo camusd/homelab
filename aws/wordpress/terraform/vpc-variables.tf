@@ -1,21 +1,36 @@
-variable "subnet_1_cidr" {
+variable "public_1_cidr" {
     default     = "10.0.0.0/24"
-    description = "Subnet 1"
+    description = "Public subnet for ELBs"
 }
 
-variable "subnet_2_cidr" {
+variable "public_2_cidr" {
     default     = "10.0.1.0/24"
-    description = "Subnet 2"
+    description = "Public subnet for ELBs"
 }
 
-variable "subnet_3_cidr" {
+variable "db_1_cidr" {
     default     = "10.0.2.0/24"
-    description = "Subnet 3"
+    description = "Private subnet for databases"
 }
 
-variable "subnet_4_cidr" {
+variable "db_2_cidr" {
     default     = "10.0.3.0/24"
-    description = "Subnet 4"
+    description = "Private subnet for databases"
+}
+
+variable "web_1_cidr" {
+    default     = "10.0.4.0/24"
+    description = "Private subnet for web"
+}
+
+variable "web_2_cidr" {
+    default     = "10.0.5.0/24"
+    description = "Private subnet for web"
+}
+
+variable "bastion_cidr" {
+    default     = "10.0.6.0/28"
+    description = "Public subnet for bastion host"
 }
 
 variable "az_1" {
