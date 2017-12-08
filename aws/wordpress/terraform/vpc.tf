@@ -213,15 +213,15 @@ resource "aws_route_table_association" "db_2" {
   route_table_id = "${aws_route_table.private.id}"
 }
 
-resource "aws_db_subnet_group" "private_subnets" {
-  name        = "private_subnet_group"
-  description = "Our private group of subnets"
+resource "aws_db_subnet_group" "db_subnets" {
+  name        = "db_subnet_group"
+  description = "Our private group of db subnets"
   subnet_ids  = ["${aws_subnet.db_1.id}", "${aws_subnet.db_2.id}"]
 }
 
-resource "aws_elasticache_subnet_group" "private_subnets" {
-  name        = "private-subnet-group"
-  description = "Our private group of subnets"
+resource "aws_elasticache_subnet_group" "elasticache_subnets" {
+  name        = "elasticache-subnet-group"
+  description = "Our private group of elasticache subnets"
   subnet_ids  = ["${aws_subnet.db_1.id}", "${aws_subnet.db_2.id}"]
 }
 
@@ -320,12 +320,12 @@ resource "aws_subnet" "web_2" {
 
 resource "aws_route_table_association" "web_1" {
   subnet_id      = "${aws_subnet.web_1.id}"
-  route_table_id = "${aws_route_table.private.id}"
+  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_route_table_association" "web_2" {
   subnet_id      = "${aws_subnet.web_2.id}"
-  route_table_id = "${aws_route_table.private.id}"
+  route_table_id = "${aws_route_table.public.id}"
 }
 
 resource "aws_network_acl" "web" {
@@ -390,6 +390,15 @@ resource "aws_network_acl" "web" {
     protocol   = "tcp"
     rule_no    = 120
     action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 25
+    to_port    = 25
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
     cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 3306
     to_port    = 3306
@@ -397,7 +406,7 @@ resource "aws_network_acl" "web" {
 
   egress {
     protocol   = "tcp"
-    rule_no    = 130
+    rule_no    = 140
     action     = "allow"
     cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 6379
@@ -406,7 +415,7 @@ resource "aws_network_acl" "web" {
 
   egress {
     protocol   = "tcp"
-    rule_no    = 140
+    rule_no    = 150
     action     = "allow"
     cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 1024
