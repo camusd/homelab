@@ -81,7 +81,7 @@ resource "aws_launch_configuration" "web_launch_conf" {
   security_groups             = ["${aws_security_group.web.id}"]
   key_name                    = "${var.aws_key_name}"
   user_data                   = "${data.template_file.web_user_data.rendered}"
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   
   lifecycle {
     create_before_destroy = true

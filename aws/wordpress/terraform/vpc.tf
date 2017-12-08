@@ -110,8 +110,8 @@ resource "aws_network_acl" "public" {
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
+    from_port  = 80
+    to_port    = 80
   }
 
   ingress {
@@ -119,17 +119,62 @@ resource "aws_network_acl" "public" {
     rule_no    = 110
     action     = "allow"
     cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
     from_port  = 80
     to_port    = 80
   }
 
   egress {
-    protocol   = "-1"
-    rule_no    = 100
+    protocol   = "tcp"
+    rule_no    = 110
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 443
+    to_port    = 443
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 22
+    to_port    = 22
   }
 
   tags {
@@ -188,7 +233,7 @@ resource "aws_network_acl" "db" {
     protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 3306
     to_port    = 3306
   }
@@ -197,7 +242,7 @@ resource "aws_network_acl" "db" {
     protocol   = "tcp"
     rule_no    = 110
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 6379
     to_port    = 6379
   }
@@ -206,18 +251,45 @@ resource "aws_network_acl" "db" {
     protocol   = "tcp"
     rule_no    = 120
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 22
     to_port    = 22
   }
 
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
   egress {
-    protocol   = "-1"
+    protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 80
+    to_port    = 80
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 1024
+    to_port    = 65535
   }
 
   tags {
@@ -274,26 +346,71 @@ resource "aws_network_acl" "web" {
     rule_no    = 110
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 2049
-    to_port    = 2049
+    from_port  = 443
+    to_port    = 443
   }
 
   ingress {
     protocol   = "tcp"
     rule_no    = 120
     action     = "allow"
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "${aws_vpc.main.cidr_block}"
     from_port  = 22
     to_port    = 22
   }
 
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
   egress {
-    protocol   = "-1"
+    protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 80
+    to_port    = 80
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 120
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 3306
+    to_port    = 3306
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 130
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 6379
+    to_port    = 6379
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 140
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 1024
+    to_port    = 65535
   }
 
   tags {
@@ -327,13 +444,31 @@ resource "aws_network_acl" "bastion" {
     to_port    = 22
   }
 
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
   egress {
-    protocol   = "-1"
+    protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
-    to_port    = 0
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "${aws_vpc.main.cidr_block}"
+    from_port  = 22
+    to_port    = 22
   }
 
   tags {

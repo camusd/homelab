@@ -35,16 +35,16 @@ resource "aws_security_group" "bastion" {
   vpc_id      = "${aws_vpc.main.id}"
 
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${var.home_ip}", "${var.work_ip}"]
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks     = ["${var.home_ip}", "${var.work_ip}"]
   }
 
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -59,10 +59,10 @@ resource "aws_security_group" "web" {
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        security_groups = ["${aws_security_group.bastion.id}"]
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
     }
 
     ingress {
@@ -73,9 +73,9 @@ resource "aws_security_group" "web" {
     }
 
     egress {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
     }
 
@@ -90,10 +90,10 @@ resource "aws_security_group" "db" {
     vpc_id      = "${aws_vpc.main.id}"
 
     ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        security_groups = ["${aws_security_group.bastion.id}"]
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
     }
 
     ingress {
@@ -104,9 +104,9 @@ resource "aws_security_group" "db" {
     }
 
     egress {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
     }
 
@@ -128,9 +128,9 @@ resource "aws_security_group" "efs" {
     }
 
     egress {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
     }
 
@@ -152,9 +152,9 @@ resource "aws_security_group" "redis" {
     }
 
     egress {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
     }
 
