@@ -101,9 +101,8 @@ resource "aws_autoscaling_group" "web_asg" {
   depends_on                 = ["aws_db_instance.db"]
   name_prefix                = "web_asg-"
   launch_configuration       = "${aws_launch_configuration.web_launch_conf.name}"
-  min_size                   = 2
-  max_size                   = 4
-  desired_capacity           = 2
+  min_size                   = 1
+  max_size                   = 5
   vpc_zone_identifier        = ["${aws_subnet.web_1.id}", "${aws_subnet.web_2.id}"]
   health_check_grace_period  = 300
   health_check_type          = "ELB"
@@ -119,6 +118,32 @@ resource "aws_autoscaling_group" "web_asg" {
       value               = "web"
       propagate_at_launch = true
   }
+}
+
+resource "aws_autoscaling_policy" "web_asg_policy" {
+  name                   = "web_asg_policy"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = "${aws_autoscaling_group.web_asg.name}"
+}
+
+resource "aws_cloudwatch_metric_alarm" "web_cpu_metric" {
+  alarm_name          = "web_cpu_metric"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "80"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_autoscaling_group.web_asg.name}"
+  }
+
+  alarm_description = "This metric monitors EC2 CPU utilization"
+  alarm_actions     = ["${aws_autoscaling_policy.web_asg_policy.arn}"]
 }
 
 resource "aws_efs_file_system" "web_efs" {
@@ -139,14 +164,6 @@ resource "aws_efs_mount_target" "web_2" {
   file_system_id  = "${aws_efs_file_system.web_efs.id}"
   subnet_id       = "${aws_subnet.web_2.id}"
   security_groups = ["${aws_security_group.efs.id}"]
-}
-
-resource "aws_autoscaling_policy" "web_asg_policy" {
-  name                   = "web_asg_policy"
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = "${aws_autoscaling_group.web_asg.name}"
 }
 
 resource "aws_key_pair" "auth" {

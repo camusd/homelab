@@ -432,6 +432,10 @@ resource "aws_subnet" "bastion" {
   vpc_id            = "${aws_vpc.main.id}"
   cidr_block        = "${var.bastion_cidr}"
   availability_zone = "${var.az_1}"
+
+  tags {
+    Name = "bastion"
+  }
 }
 
 # Associate our bastion host subnet to the public route table
