@@ -84,6 +84,26 @@ resource "aws_security_group" "web" {
     }
 }
 
+resource "aws_security_group" "efs_client" {
+    name        = "efs_client"
+    description = "Allow connection to efs"
+    vpc_id      = "${aws_vpc.main.id}"
+
+    tags {
+        Name = "efs_client"
+    }
+}
+
+resource "aws_security_group" "efs_backup_client" {
+    name        = "efs_backup_client"
+    description = "Allow connection to efs backup"
+    vpc_id      = "${aws_vpc.main.id}"
+
+    tags {
+        Name = "efs_backup_client"
+    }
+}
+
 resource "aws_security_group" "db" {
     name        = "db"
     description = "Allow private MySQL and bastion host SSH inbound traffic"
@@ -124,7 +144,7 @@ resource "aws_security_group" "efs" {
         from_port       = 2049
         to_port         = 2049
         protocol        = "tcp"
-        security_groups = ["${aws_security_group.web.id}"]
+        security_groups = ["${aws_security_group.efs_client.id}"]
     }
 
     egress {
@@ -136,6 +156,30 @@ resource "aws_security_group" "efs" {
 
     tags {
         Name = "efs"
+    }
+}
+
+resource "aws_security_group" "efs_backup" {
+    name        = "efs_backup"
+    description = "Allow private NFS traffic"
+    vpc_id      = "${aws_vpc.main.id}"
+
+    ingress {
+        from_port       = 2049
+        to_port         = 2049
+        protocol        = "tcp"
+        security_groups = ["${aws_security_group.efs_backup_client.id}"]
+    }
+
+    egress {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags {
+        Name = "efs_backup"
     }
 }
 
