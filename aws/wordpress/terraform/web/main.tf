@@ -78,7 +78,9 @@ resource "aws_launch_configuration" "web_launch_conf" {
   name_prefix                 = "web_config-"
   image_id                    = "${data.aws_ami.web_ami.id}"
   instance_type               = "t2.micro"
-  security_groups             = ["${aws_security_group.web.id}"]
+  security_groups             = ["${aws_security_group.web.id}",
+                                 "${aws_security_group.efs_client.id}",
+                                 "${aws_security_group.efs_backup_client.id}"]
   key_name                    = "${var.aws_key_name}"
   user_data                   = "${data.template_file.web_user_data.rendered}"
   associate_public_ip_address = true
@@ -120,37 +122,87 @@ resource "aws_autoscaling_group" "web_asg" {
   }
 }
 
-resource "aws_autoscaling_policy" "web_asg_policy" {
-  name                   = "web_asg_policy"
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
-  autoscaling_group_name = "${aws_autoscaling_group.web_asg.name}"
+resource "aws_autoscaling_policy" "web_scale_out" {
+  name                     = "web_scale_out"
+  adjustment_type          = "PercentChangeInCapacity"
+  policy_type              = "StepScaling"
+  metric_aggregation_type  = "Average"
+  min_adjustment_magnitude = "1"
+  autoscaling_group_name   = "${aws_autoscaling_group.web_asg.name}"
+
+  step_adjustment {
+    scaling_adjustment          = 10
+    metric_interval_lower_bound = 0
+    metric_interval_upper_bound = 10
+  }
+
+  step_adjustment {
+    scaling_adjustment          = 30
+    metric_interval_lower_bound = 10
+  }
 }
 
-resource "aws_cloudwatch_metric_alarm" "web_cpu_metric" {
-  alarm_name          = "web_cpu_metric"
+resource "aws_autoscaling_policy" "web_scale_in" {
+  name                     = "web_scale_in"
+  adjustment_type          = "PercentChangeInCapacity"
+  policy_type              = "StepScaling"
+  metric_aggregation_type  = "Average"
+  min_adjustment_magnitude = "1"
+  autoscaling_group_name   = "${aws_autoscaling_group.web_asg.name}"
+
+  step_adjustment {
+    scaling_adjustment          = -10
+    metric_interval_lower_bound = -10
+    metric_interval_upper_bound = 0
+  }
+
+  step_adjustment {
+    scaling_adjustment          = -30
+    metric_interval_upper_bound = -10
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "web_scale_out" {
+  alarm_name          = "web_scale_out"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = "120"
   statistic           = "Average"
-  threshold           = "80"
+  threshold           = "60"
 
   dimensions {
     AutoScalingGroupName = "${aws_autoscaling_group.web_asg.name}"
   }
 
   alarm_description = "This metric monitors EC2 CPU utilization"
-  alarm_actions     = ["${aws_autoscaling_policy.web_asg_policy.arn}"]
+  alarm_actions     = ["${aws_autoscaling_policy.web_scale_out.arn}"]
+}
+
+resource "aws_cloudwatch_metric_alarm" "web_scale_in" {
+  alarm_name          = "web_scale_in"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "40"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_autoscaling_group.web_asg.name}"
+  }
+
+  alarm_description = "This metric monitors EC2 CPU utilization"
+  alarm_actions     = ["${aws_autoscaling_policy.web_scale_in.arn}"]
 }
 
 resource "aws_efs_file_system" "web_efs" {
   creation_token = "wordpress"
 
   tags {
-      Name = "web"
+    Name = "web"
   }
 }
 
@@ -164,6 +216,20 @@ resource "aws_efs_mount_target" "web_2" {
   file_system_id  = "${aws_efs_file_system.web_efs.id}"
   subnet_id       = "${aws_subnet.web_2.id}"
   security_groups = ["${aws_security_group.efs.id}"]
+}
+
+resource "aws_efs_file_system" "web_efs_backup" {
+  creation_token = "wordpress_backup"
+
+  tags {
+    Name = "web_backup"
+  }
+}
+
+resource "aws_efs_mount_target" "web_backup" {
+  file_system_id  = "${aws_efs_file_system.web_efs_backup.id}"
+  subnet_id       = "${aws_subnet.web_1.id}"
+  security_groups = ["${aws_security_group.efs_backup.id}"]
 }
 
 resource "aws_key_pair" "auth" {

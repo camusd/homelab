@@ -21,20 +21,19 @@ echo '
         CacheDefaultExpire 3600
         CacheDisable /wordpress/wp-admin
         CacheIgnoreNoLastMod On
-        CacheIgnoreCacheControl On
     </ifModule>
     <IfModule mod_expires.c>
         ExpiresActive On
-        ExpiresDefault "access plus 1 day"
-        ExpiresByType image/jpg "access plus 5 days"
-        ExpiresByType image/jpeg "access plus 5 days"
-        ExpiresByType image/gif "access plus 5 days"
-        ExpiresByType image/png "access plus 5 days"
-        ExpiresByType text/css "access plus 1 month"
-        ExpiresByType application/pdf "access plus 1 month"
-        ExpiresByType text/x-javascript "access plus 1 month"
-        ExpiresByType application/x-shockwave-flash "access plus 1 month"
-        ExpiresByType image/x-icon "access plus 1 year"
+        ExpiresDefault A60
+        ExpiresByType image/jpg A3600
+        ExpiresByType image/jpeg A3600
+        ExpiresByType image/gif A3600
+        ExpiresByType image/png A3600
+        ExpiresByType text/css A3600
+        ExpiresByType application/pdf A3600
+        ExpiresByType text/x-javascript A3600
+        ExpiresByType application/x-shockwave-flash A3600
+        ExpiresByType image/x-icon A3600
     </IfModule>
 </ifModule>' | sudo tee -a /etc/httpd/conf/httpd.conf
 
