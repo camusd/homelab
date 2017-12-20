@@ -79,11 +79,11 @@ resource "aws_launch_configuration" "web_launch_conf" {
   image_id                    = "${data.aws_ami.web_ami.id}"
   instance_type               = "t2.micro"
   security_groups             = ["${aws_security_group.web.id}",
-                                 "${aws_security_group.efs_client.id}",
-                                 "${aws_security_group.efs_backup_client.id}"]
+                                 "${aws_security_group.efs_client.id}"]
   key_name                    = "${var.aws_key_name}"
   user_data                   = "${data.template_file.web_user_data.rendered}"
   associate_public_ip_address = true
+  iam_instance_profile        = "${aws_iam_instance_profile.web_instance_profile.name}"
   
   lifecycle {
     create_before_destroy = true
@@ -216,20 +216,6 @@ resource "aws_efs_mount_target" "web_2" {
   file_system_id  = "${aws_efs_file_system.web_efs.id}"
   subnet_id       = "${aws_subnet.web_2.id}"
   security_groups = ["${aws_security_group.efs.id}"]
-}
-
-resource "aws_efs_file_system" "web_efs_backup" {
-  creation_token = "wordpress_backup"
-
-  tags {
-    Name = "web_backup"
-  }
-}
-
-resource "aws_efs_mount_target" "web_backup" {
-  file_system_id  = "${aws_efs_file_system.web_efs_backup.id}"
-  subnet_id       = "${aws_subnet.web_1.id}"
-  security_groups = ["${aws_security_group.efs_backup.id}"]
 }
 
 resource "aws_key_pair" "auth" {

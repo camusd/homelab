@@ -1,0 +1,4 @@
+TODO: finish configuring backup for efs
+TODO: refactor into modules
+TODO: setup bastion host in management vpc with vpc peering. Lock down management vpc
+TODO: simplify main vpc. 3 public 3 private subnets. Setup s3 in vpc for in vpc access

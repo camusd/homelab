@@ -3,6 +3,7 @@ resource "aws_db_instance" "db" {
     depends_on                  = ["aws_security_group.db"]
     identifier                  = "${var.db_identifier}"
     allocated_storage           = "${var.db_storage}"
+    storage_type                = "gp2"
     engine                      = "${var.db_engine}"
     engine_version              = "${lookup(var.db_engine_version, var.db_engine)}"
     instance_class              = "${var.db_instance_class}"
@@ -12,9 +13,10 @@ resource "aws_db_instance" "db" {
     vpc_security_group_ids      = ["${aws_security_group.db.id}"]
     db_subnet_group_name        = "${aws_db_subnet_group.db_subnets.id}"
     backup_window               = "10:00-10:30"
-    maintenance-window          = "sun:10:30-sun:11:30"
+    maintenance_window          = "sun:10:30-sun:11:30"
     final_snapshot_identifier   = "wordpress-rds-snapshot"
     backup_retention_period     = "1"
+    copy_tags_to_snapshot       = true
     apply_immediately           = false
     multi_az                    = false
     allow_major_version_upgrade = true
@@ -25,10 +27,10 @@ resource "aws_db_instance" "db" {
   }
 }
 
-data "aws_db_snapshot" "db_snapshot" {
-  most_recent = true
-  db_instance_identifier = "${aws_db_instance.db.identifier}"
-}
+# data "aws_db_snapshot" "db_snapshot" {
+#   most_recent = true
+#   db_instance_identifier = "${aws_db_instance.db.identifier}"
+# }
 
 resource "aws_elasticache_cluster" "web-elasticache" {
   cluster_id           = "web-elasticache"

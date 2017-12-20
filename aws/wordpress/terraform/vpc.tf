@@ -28,19 +28,19 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_nat_gateway" "nat" {
-  allocation_id = "${aws_eip.nat.id}"
-  subnet_id     = "${aws_subnet.public_1.id}"
-  depends_on    = ["aws_internet_gateway.igw"]
+# resource "aws_nat_gateway" "nat" {
+#   allocation_id = "${aws_eip.nat.id}"
+#   subnet_id     = "${aws_subnet.public_1.id}"
+#   depends_on    = ["aws_internet_gateway.igw"]
 
-  tags {
-    Name = "nat"
-  }
-}
+#   tags {
+#     Name = "nat"
+#   }
+# }
 
-resource "aws_eip" "nat" {
-  vpc = true
-}
+# resource "aws_eip" "nat" {
+#   vpc = true
+# }
 
 # Create a routing table with a route to the internet gateway
 resource "aws_route_table" "public" {
@@ -60,10 +60,10 @@ resource "aws_route_table" "public" {
 resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.main.id}"
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_nat_gateway.nat.id}"
-  }
+  # route {
+    # cidr_block = "0.0.0.0/0"
+    # gateway_id = "${aws_nat_gateway.nat.id}"
+  # }
 
   tags {
     Name = "private"
